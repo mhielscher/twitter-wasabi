@@ -1,14 +1,22 @@
 #!/usr/bin/env python
 
+import codecs
 from api.streaming import TwitterStream_v_1_1
 import simplejson as json
+from gui.webkit.tweet import Tweet
+
+html_outfile = codecs.open('timeline.html', encoding='utf-8', mode='w')
 
 oauth_keys = json.load(open('oauth.json', 'r'))
 
 t = TwitterStream_v_1_1(**oauth_keys)
 for tweet in t.iter_tweets():
+    print tweet
     if 'text' in tweet and 'user' in tweet and 'created_at' in tweet:
         print "@%s: %s [%s]" % (tweet['user']['screen_name'], tweet['text'], tweet['created_at'])
+        disp_tweet = Tweet(tweet)
+        html_outfile.write(disp_tweet.html)
+        
 
 """
 {

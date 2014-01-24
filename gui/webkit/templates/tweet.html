@@ -1,0 +1,50 @@
+<table class="tweet  " href="/{{ tweet.user.screen_name }}/status/{{ tweet.id }}?p=v">
+
+  <tbody><tr class="tweet-header ">
+        <td class="avatar" rowspan="3">
+          <a href="/{{ tweet.user.screen_name }}?p=i"><img alt="{{ tweet.user.name }}" src="{{ tweet.user.profile_image_url }}"></a>
+        </td>
+      <td class="user-info">
+        <a href="/{{ tweet.user.screen_name }}?p=s">
+          <strong class="fullname">{{ tweet.user.name }}</strong>
+          <span class="username">
+            <span>@</span>{{ tweet.user.screen_name }}
+          </span>
+          
+        </a>
+      </td>
+    <td class="timestamp">
+      <a name="tweet_{{ tweet.id }}" href="/{{ tweet.user.screen_name }}/status/{{ tweet.id }}?p=p">5m</a>
+    </td>
+
+  </tr>
+  <tr class="tweet-container">
+    <td colspan="2" class="tweet-content">
+      <div class="tweet-text" data-id="{{ tweet.id }}"><div class="dir-ltr" dir="ltr">{{ tweet.text }}</div></div>
+
+
+
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="meta-and-actions">
+      <span class="metadata">
+        <a href="/{{ tweet.user.screen_name }}/status/{{ tweet.id }}?p=v">View details</a>
+        <span class="middot">&middot;</span>
+      </span>
+      <span class="tweet-actions">
+        <a href="/{{ tweet.user.screen_name }}/reply/{{ tweet.id }}" class="first"><span class="imgsprite_tweet_reply_gif" title="Reply"></span></a>
+          <a href="/statuses/{{ tweet.id }}/retweet">
+              <span class="imgsprite_tweet_rt_gif" title="Retweet"></span>
+          </a>
+        <a href="/statuses/{{ tweet.id }}/favorite" class="favorite">
+            <span class="imgsprite_tweet_fav_gif" title="Favorite"></span>
+        </a>
+        <a href="/{{ tweet.user.screen_name }}/status/{{ tweet.id }}/actions" class="last"></a>
+      </span>
+
+
+    </td>
+  </tr>
+
+</tbody></table>
