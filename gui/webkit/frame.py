@@ -1,7 +1,8 @@
 from gi.repository import Gtk, Gdk
 from gi.repository import GLib
+from gi.repository import GObject
 from gi.repository import WebKit
-from gi.repository import Soup
+#from gi.repository import Soup
 import sys
 import webbrowser
 import urlparse
@@ -9,7 +10,9 @@ import requests
 import time
 import os
 import tweet
-import eventlet
+import threading
+import Queue
+import time
 
 class Frame:
     webkit_settings = [
@@ -48,7 +51,14 @@ class Frame:
         self.refresh_count = 0
         
         self.tweet_source = tweet_source
+        self.tweet_queue = Queue.Queue()
         self.tweets = []
+        
+        GObject.threads_init()
+        
+        self.tweet_thread = threading.Thread(target=self.retrieve_tweets)
+        self.tweet_thread.daemon = True
+        self.tweet_thread.start()
         
         self.update_content()
         self.init_view()
@@ -84,10 +94,15 @@ class Frame:
         
         Gtk.main()
     
+    def retrieve_tweets(self):
+        for tweet in self.tweet_source:
+            self.tweet_queue.put(tweet, False)
+            print "Added tweet to queue."
+    
     def update_content(self):
         self.top_template = open(tweet.template_dir+'/timeline-top.html', 'r').read()
         self.content = ""
-        for twt in self.tweets:
+        for twt in reversed(self.tweets):
             self.content += twt.html
         self.bottom_template = open(tweet.template_dir+'/timeline-bottom.html', 'r').read()
         self.full_content = self.top_template + self.content + self.bottom_template
@@ -187,14 +202,20 @@ class Frame:
         return True
     
     def fetch_tweets(self, view, sw):
-        print "Fetching tweet..."
-        twt = self.tweet_source.next()
-        print "Done fetching."
-        print twt
-        twt = tweet.Tweet(twt)
-        if twt.validate():
-            self.tweets.append(twt)
-            self.update_content()
-            self.view.load_string(self.full_content, "text/html", "UTF-8", "/")
+        #print self.tweets
+        #print self.tweet_queue.qsize()
+        while True:
+            try:
+                twt = self.tweet_queue.get(False)
+            except Queue.Empty:
+                #print "%d - No tweets." % (time.time())
+                break
+            print "Got tweet."
+            print twt
+            twt = tweet.Tweet(twt)
+            if twt.validate():
+                self.tweets.append(twt)
+                self.update_content()
+                self.view.load_string(self.full_content, "text/html", "UTF-8", "/")
         return True
     
