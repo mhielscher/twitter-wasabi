@@ -5,5 +5,6 @@ from gui.webkit.frame import Frame
 
 oauth_keys = json.load(open('oauth.json', 'r'))
 
-t = TwitterStream_v_1_1(**oauth_keys)
-f = Frame(t.iter_tweets())
+stream = TwitterStream_v_1_1(**oauth_keys)
+rest = Twitter_v_1_1(**oauth_keys)
+f = Frame(stream, rest)

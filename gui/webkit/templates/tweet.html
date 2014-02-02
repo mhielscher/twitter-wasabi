@@ -14,13 +14,13 @@
         </a>
       </td>
     <td class="timestamp">
-      <a name="tweet_{{ tweet.id }}" href="/{{ tweet.user.screen_name }}/status/{{ tweet.id }}?p=p">5m</a>
+      <a name="tweet_{{ tweet.id }}" href="/{{ tweet.user.screen_name }}/status/{{ tweet.id }}?p=p">{{ tweet_time }}</a>
     </td>
 
   </tr>
   <tr class="tweet-container">
     <td colspan="2" class="tweet-content">
-      <div class="tweet-text" data-id="{{ tweet.id }}"><div class="dir-ltr" dir="ltr">{{ tweet.text }}</div></div>
+      <div class="tweet-text" data-id="{{ tweet.id }}"><div class="dir-ltr" dir="ltr">{{ tweet_html }}</div></div>
 
 
 

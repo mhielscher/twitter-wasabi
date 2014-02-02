@@ -28,7 +28,7 @@ class Frame:
         ('resizable-text-areas', True)
     ]
     
-    def __init__(self, tweet_source):
+    def __init__(self, tweet_source, rest_api):
         # Default window size
         self.default_width = 340
         self.default_height = 700
@@ -50,7 +50,7 @@ class Frame:
         self.save_scheduled = False
         self.refresh_count = 0
         
-        self.tweet_source = tweet_source
+        self.tweet_source = tweet_source.iter_tweets()
         self.tweet_queue = Queue.Queue()
         self.tweets = []
         
@@ -88,6 +88,7 @@ class Frame:
 
         #self.view.connect("navigation-requested", self.on_nav_req)
         self.view.connect("new-window-policy-decision-requested", self.open_external_link)
+        self.view.connect("navigation-requested", self.open_link)
         GLib.timeout_add_seconds(self.refresh_time, self.fetch_tweets, self.view, self.sw)
         
         self.view.load_string(self.full_content, "text/html", "UTF-8", "/")
@@ -103,7 +104,7 @@ class Frame:
         self.top_template = open(tweet.template_dir+'/timeline-top.html', 'r').read()
         self.content = ""
         for twt in reversed(self.tweets):
-            self.content += twt.html
+            self.content += twt.render()
         self.bottom_template = open(tweet.template_dir+'/timeline-bottom.html', 'r').read()
         self.full_content = self.top_template + self.content + self.bottom_template
     
@@ -189,7 +190,14 @@ class Frame:
             #req.set_uri(end_url)
             return self.open_external_link(view, frame, req, None, None, data)
         return False
-
+    
+    def open_link(self, view, frame, req, data=None):
+        print "Opening %s" % req.get_uri()
+        if req.get_uri().startswith('/'):
+            return False
+        else:
+            return self.open_external_link(view, frame, req, None, None)
+    
     def open_external_link(self, view, frame, req, nav_action, decision, data=None):
         print "Externally open %s" % req.get_uri()
         if self.photo_workaround and 'mobile.twitter.com' in req.get_uri() and 'photo' in req.get_uri():
