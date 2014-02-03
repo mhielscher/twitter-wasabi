@@ -12,7 +12,7 @@ print template_dir
 
 class Tweet:
     def __init__(self, tweet):
-        print tweet
+        #print tweet
         self.data = tweet
         if self.validate():
             self.time = dateutil.parser.parse(self.data['created_at']).astimezone(dateutil.tz.tzlocal())
@@ -54,7 +54,7 @@ class Tweet:
                 for hashtag in self.data['entities']['hashtags']:
                     start_idx = hashtag['indices'][0]
                     end_idx = hashtag['indices'][1]
-                    link_html = '<a href="https://twitter.com/search?q=%s&src=hash">#%s</a>' % (urllib.quote(hashtag['text']), hashtag['text'])
+                    link_html = '<a href="https://twitter.com/search?q=%s&src=hash">#%s</a>' % (urllib.quote('#'+hashtag['text']), hashtag['text'])
                     self.html = self.html.replace(self.data['text'][start_idx:end_idx], link_html)
     
     def render(self):

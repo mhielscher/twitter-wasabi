@@ -52,7 +52,13 @@ class Frame:
         
         self.tweet_source = tweet_source.iter_tweets()
         self.tweet_queue = Queue.Queue()
-        self.tweets = []
+        self.tweets = {}
+        self.to_delete = []
+        
+        self.rest = rest_api
+        preloaded_tweets = self.rest.get_home_timeline(count=50)
+        for twt in preloaded_tweets:
+            self.tweets[twt['id']] = tweet.Tweet(twt)
         
         GObject.threads_init()
         
@@ -103,7 +109,7 @@ class Frame:
     def update_content(self):
         self.top_template = open(tweet.template_dir+'/timeline-top.html', 'r').read()
         self.content = ""
-        for twt in reversed(self.tweets):
+        for tid, twt in sorted(self.tweets.items(), reverse=True):
             self.content += twt.render()
         self.bottom_template = open(tweet.template_dir+'/timeline-bottom.html', 'r').read()
         self.full_content = self.top_template + self.content + self.bottom_template
@@ -222,8 +228,18 @@ class Frame:
             print twt
             twt = tweet.Tweet(twt)
             if twt.validate():
-                self.tweets.append(twt)
-                self.update_content()
-                self.view.load_string(self.full_content, "text/html", "UTF-8", "/")
+                if twt.data['id'] in self.to_delete:
+                    self.to_delete.remove(twt.data['id'])
+                else:
+                    self.tweets[twt.data['id']] = twt
+                    self.update_content()
+                    self.view.load_string(self.full_content, "text/html", "UTF-8", "/")
+            elif 'delete' in twt.data and 'status' in twt.data['delete']:
+                if twt.data['delete']['status']['id'] in self.tweets:
+                    self.tweets[twt.data['delete']['status']['id']].time_str = "[DEL]"
+                    self.update_content()
+                    self.view.load_string(self.full_content, "text/html", "UTF-8", "/")
+                else:
+                    self.to_delete.append(twt.data['delete']['status']['id'])
         return True
     
