@@ -199,7 +199,11 @@ class Frame:
     
     def open_link(self, view, frame, req, data=None):
         print "Opening %s" % req.get_uri()
-        if req.get_uri().startswith('/'):
+        if req.get_uri() == "/compose/tweet":
+            self.full_content = open(tweet.template_dir+'/compose.html', 'r').read()
+            self.view.load_string(self.full_content, "text/html", "UTF-8", "/")
+            return False
+        elif req.get_uri() == "/":
             return False
         else:
             return self.open_external_link(view, frame, req, None, None)
@@ -233,12 +237,14 @@ class Frame:
                 else:
                     self.tweets[twt.data['id']] = twt
                     self.update_content()
-                    self.view.load_string(self.full_content, "text/html", "UTF-8", "/")
+                    if view.get_uri() == "/":
+                        self.view.load_string(self.full_content, "text/html", "UTF-8", "/")
             elif 'delete' in twt.data and 'status' in twt.data['delete']:
                 if twt.data['delete']['status']['id'] in self.tweets:
                     self.tweets[twt.data['delete']['status']['id']].time_str = "[DEL]"
                     self.update_content()
-                    self.view.load_string(self.full_content, "text/html", "UTF-8", "/")
+                    if view.get_uri() == "/":
+                        self.view.load_string(self.full_content, "text/html", "UTF-8", "/")
                 else:
                     self.to_delete.append(twt.data['delete']['status']['id'])
         return True
