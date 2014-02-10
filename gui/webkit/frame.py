@@ -94,7 +94,7 @@ class Frame:
 
         #self.view.connect("navigation-requested", self.on_nav_req)
         self.view.connect("new-window-policy-decision-requested", self.open_external_link)
-        self.view.connect("navigation-requested", self.open_link)
+        self.view.connect("navigation-policy-decision-requested", self.open_link)
         GLib.timeout_add_seconds(self.refresh_time, self.fetch_tweets, self.view, self.sw)
         
         self.view.load_string(self.full_content, "text/html", "UTF-8", "/")
@@ -197,12 +197,20 @@ class Frame:
             return self.open_external_link(view, frame, req, None, None, data)
         return False
     
-    def open_link(self, view, frame, req, data=None):
+    def open_link(self, view, frame, req, nav, pol, data=None):
         print "Opening %s" % req.get_uri()
-        if req.get_uri() == "/compose/tweet":
+        if req.get_uri() == "wasabi://compose/tweet":
             self.full_content = open(tweet.template_dir+'/compose.html', 'r').read()
             self.view.load_string(self.full_content, "text/html", "UTF-8", "/")
             return False
+        elif req.get_uri().startswith("wasabi://compose/send"):
+            text = urlparse.parse_qs(urlparse.urlparse(req.get_uri()).query)['tweet[text]'][0]
+            twt = tweet.Tweet(self.rest.send_tweet(text))
+            if twt:
+                self.tweets[twt.data['id']] = twt
+                self.update_content()
+                self.view.load_string(self.full_content, "text/html", "UTF-8", "/")
+                return False
         elif req.get_uri() == "/":
             return False
         else:
@@ -248,4 +256,6 @@ class Frame:
                 else:
                     self.to_delete.append(twt.data['delete']['status']['id'])
         return True
-    
+
+class PageLoader:
+    pass

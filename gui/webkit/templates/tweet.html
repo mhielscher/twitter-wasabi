@@ -29,18 +29,18 @@
   <tr>
     <td colspan="2" class="meta-and-actions">
       <span class="metadata">
-        <a href="/{{ tweet.user.screen_name }}/status/{{ tweet.id }}?p=v">View details</a>
+        <a href="wasabi://status/{{ tweet.user.screen_name }}/{{ tweet.id }}">View details</a>
         <span class="middot">&middot;</span>
       </span>
       <span class="tweet-actions">
-        <a href="/{{ tweet.user.screen_name }}/reply/{{ tweet.id }}" class="first"><span class="imgsprite_tweet_reply_gif" title="Reply"></span></a>
-          <a href="/statuses/{{ tweet.id }}/retweet">
+        <a href="wasabi://reply/{{ tweet.user.screen_name }}/{{ tweet.id }}" class="first"><span class="imgsprite_tweet_reply_gif" title="Reply"></span></a>
+          <a href="wasabi://retweet/{{ tweet.id }}">
               <span class="imgsprite_tweet_rt_gif" title="Retweet"></span>
           </a>
-        <a href="/statuses/{{ tweet.id }}/favorite" class="favorite">
+        <a href="wasabi://favorite/{{ tweet.id }}" class="favorite">
             <span class="imgsprite_tweet_fav_gif" title="Favorite"></span>
         </a>
-        <a href="/{{ tweet.user.screen_name }}/status/{{ tweet.id }}/actions" class="last"></a>
+        <a href="wasabi://status/{{ tweet.user.screen_name }}/{{ tweet.id }}/actions" class="last"></a>
       </span>
 
 

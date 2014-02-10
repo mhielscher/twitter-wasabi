@@ -17,9 +17,9 @@ class Tweet:
         if self.validate():
             self.time = dateutil.parser.parse(self.data['created_at']).astimezone(dateutil.tz.tzlocal())
             if self.time.date() != datetime.datetime.today().date():
-                self.time_str = self.time.strftime("%b %-d %H:%M:%S")
+                self.time_str = self.time.strftime("%b")+self.time.strftime(" %-d %-I:%M%p").lower()
             else:
-                self.time_str = self.time.strftime("%H:%M:%S")
+                self.time_str = self.time.strftime("%-I:%M%p").lower()
             self.template = Template(open(template_dir+'/tweet.html', 'r').read())
             self.build_html()
     
