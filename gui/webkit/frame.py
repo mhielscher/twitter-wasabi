@@ -13,6 +13,7 @@ import tweet
 import threading
 import Queue
 import time
+from jinja2 import Template
 
 class Frame:
     webkit_settings = [
@@ -59,6 +60,8 @@ class Frame:
         preloaded_tweets = self.rest.get_home_timeline(count=50)
         for twt in preloaded_tweets:
             self.tweets[twt['id']] = tweet.Tweet(twt)
+        for t in sorted(self.tweets.items())[-5:-1]:
+            print t[-1].data
         
         GObject.threads_init()
         
@@ -97,7 +100,7 @@ class Frame:
         self.view.connect("navigation-policy-decision-requested", self.open_link)
         GLib.timeout_add_seconds(self.refresh_time, self.fetch_tweets, self.view, self.sw)
         
-        self.view.load_string(self.full_content, "text/html", "UTF-8", "/")
+        self.view.load_string(self.full_content, "text/html", "UTF-8", "wasabi://home")
         
         Gtk.main()
     
@@ -201,17 +204,34 @@ class Frame:
         print "Opening %s" % req.get_uri()
         if req.get_uri() == "wasabi://compose/tweet":
             self.full_content = open(tweet.template_dir+'/compose.html', 'r').read()
-            self.view.load_string(self.full_content, "text/html", "UTF-8", "/")
-            return False
+            self.view.load_string(self.full_content, "text/html", "UTF-8", "")
+            return True
+        elif req.get_uri().startswith("wasabi://compose/reply"):
+            in_reply_to = urlparse.parse_qs(urlparse.urlparse(req.get_uri()).query)['reply_id'][0]
+            reply_text = urlparse.parse_qs(urlparse.urlparse(req.get_uri()).query)['reply_text'][0]
+            page = Template(open(tweet.template_dir+'/reply.html', 'r').read())
+            self.full_content = page.render(reply_id=in_reply_to, reply_text=reply_text)
+            print self.full_content
+            self.view.load_string(self.full_content, "text/html", "UTF-8", "")
+            return True
         elif req.get_uri().startswith("wasabi://compose/send"):
-            text = urlparse.parse_qs(urlparse.urlparse(req.get_uri()).query)['tweet[text]'][0]
-            twt = tweet.Tweet(self.rest.send_tweet(text))
+            params = urlparse.parse_qs(urlparse.urlparse(req.get_uri()).query)
+            text = params['tweet[text]'][0]
+            if 'tweet[in_reply_to]' in params:
+                in_reply_to = urlparse.parse_qs(urlparse.urlparse(req.get_uri()).query)['tweet[in_reply_to]'][0]
+                twt = tweet.Tweet(self.rest.send_tweet(status=text, in_reply_to_status_id=in_reply_to))
+            else:
+                twt = tweet.Tweet(self.rest.send_tweet(status=text))
             if twt:
                 self.tweets[twt.data['id']] = twt
                 self.update_content()
-                self.view.load_string(self.full_content, "text/html", "UTF-8", "/")
+                self.view.load_string(self.full_content, "text/html", "UTF-8", "wasabi://home")
                 return False
-        elif req.get_uri() == "/":
+        elif req.get_uri() == "wasabi://home":
+            print view.get_uri()
+            #if view.get_uri() != "wasabi://home":
+            #    self.update_content()
+            #    self.view.load_string(self.full_content, "text/html", "UTF-8", "wasabi://home")
             return False
         else:
             return self.open_external_link(view, frame, req, None, None)
@@ -245,14 +265,14 @@ class Frame:
                 else:
                     self.tweets[twt.data['id']] = twt
                     self.update_content()
-                    if view.get_uri() == "/":
-                        self.view.load_string(self.full_content, "text/html", "UTF-8", "/")
+                    if view.get_uri() == "wasabi://home":
+                        self.view.load_string(self.full_content, "text/html", "UTF-8", "wasabi://home")
             elif 'delete' in twt.data and 'status' in twt.data['delete']:
                 if twt.data['delete']['status']['id'] in self.tweets:
                     self.tweets[twt.data['delete']['status']['id']].time_str = "[DEL]"
                     self.update_content()
-                    if view.get_uri() == "/":
-                        self.view.load_string(self.full_content, "text/html", "UTF-8", "/")
+                    if view.get_uri() == "wasabi://home":
+                        self.view.load_string(self.full_content, "text/html", "UTF-8", "wasabi://home")
                 else:
                     self.to_delete.append(twt.data['delete']['status']['id'])
         return True

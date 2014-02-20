@@ -45,9 +45,9 @@ class Twitter_v_1_1:
             return []
         return json.loads(c)
     
-    def send_tweet(self, text):
+    def send_tweet(self, **kwargs):
         url = "https://api.twitter.com/1.1/statuses/update.json"
-        r, c = self.request(url, method="POST", parameters={'status': text})
+        r, c = self.request(url, method="POST", parameters=kwargs)
         if r.status != 200:
             print r.status
             return None

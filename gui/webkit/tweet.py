@@ -14,6 +14,12 @@ class Tweet:
     def __init__(self, tweet):
         #print tweet
         self.data = tweet
+        if 'retweeted_status' in self.data:
+            retweet_wrapper = self.data.copy()
+            del retweet_wrapper['retweeted_status']
+            self.data = self.data['retweeted_status']
+            self.data['retweet_wrapper'] = retweet_wrapper
+            self.data['retweeted_by'] = retweet_wrapper['user']['screen_name']
         if self.validate():
             self.time = dateutil.parser.parse(self.data['created_at']).astimezone(dateutil.tz.tzlocal())
             if self.time.date() != datetime.datetime.today().date():

@@ -1,6 +1,16 @@
 <table class="tweet  " href="/{{ tweet.user.screen_name }}/status/{{ tweet.id }}?p=v">
 
-  <tbody><tr class="tweet-header ">
+  <tbody>
+  {% if 'retweeted_by' in tweet and tweet.retweeted_by != '' %}
+  <tr class="tweet-content ">
+      <td class="avatar-spacer"></td>
+      <td class="tweet-social-context">
+        <span class="context">{{ tweet.retweeted_by }} retweeted</span>
+      </td>
+      <td class="timestamp-spacer"></td>
+  </tr>
+  {% endif %}
+  <tr class="tweet-header ">
         <td class="avatar" rowspan="3">
           <a href="/{{ tweet.user.screen_name }}?p=i"><img alt="{{ tweet.user.name }}" src="{{ tweet.user.profile_image_url }}"></a>
         </td>
@@ -33,7 +43,7 @@
         <span class="middot">&middot;</span>
       </span>
       <span class="tweet-actions">
-        <a href="wasabi://reply/{{ tweet.user.screen_name }}/{{ tweet.id }}" class="first"><span class="imgsprite_tweet_reply_gif" title="Reply"></span></a>
+        <a href="wasabi://compose/reply?reply_id={{ tweet.id }}&reply_text=@{{ tweet.user.screen_name }} " class="first"><span class="imgsprite_tweet_reply_gif" title="Reply"></span></a>
           <a href="wasabi://retweet/{{ tweet.id }}">
               <span class="imgsprite_tweet_rt_gif" title="Retweet"></span>
           </a>
